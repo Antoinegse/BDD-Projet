@@ -131,4 +131,9 @@ public class Artist {
     public String toString() {
         return name;
     }
+
+    public void setIdArtist(int int1) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setIdArtist'");
+    }
 }

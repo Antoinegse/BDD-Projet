@@ -45,7 +45,7 @@ public class JdbcArtistDao implements ArtistDao {
                         resultSet.getString("bio")
                 );
 
-                artist.setBirthyear(
+                artist.setBirthYear(
                         resultSet.getInt("birthyear")
                 );
 
@@ -85,7 +85,7 @@ public class JdbcArtistDao implements ArtistDao {
 
             statement.setString(1, artist.getName());
             statement.setString(2, artist.getBio());
-            statement.setInt(3, artist.getBirthyear());
+            statement.setInt(3, artist.getBirthYear());
             statement.setString(4, artist.getContactEmail());
             statement.setString(5, artist.getCity());
             statement.setBoolean(6, artist.isActive());
@@ -111,7 +111,7 @@ public class JdbcArtistDao implements ArtistDao {
                     connection.prepareStatement(sql);
 
             statement.setString(1, artist.getBio());
-            statement.setInt(2, artist.getBirthyear());
+            statement.setInt(2, artist.getBirthYear());
             statement.setString(3, artist.getContactEmail());
             statement.setString(4, artist.getCity());
             statement.setBoolean(5, artist.isActive());
@@ -177,7 +177,7 @@ public class JdbcArtistDao implements ArtistDao {
                         resultSet.getString("bio")
                 );
 
-                artist.setBirthyear(
+                artist.setBirthYear(
                         resultSet.getInt("birthyear")
                 );
 
