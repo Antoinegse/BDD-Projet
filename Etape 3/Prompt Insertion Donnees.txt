@@ -1,0 +1,156 @@
+Génère un jeu complet de données SQL réalistes pour la base de données ArtConnect ci-dessous.
+
+Contraintes importantes :
+- Fournir uniquement des requêtes SQL INSERT INTO.
+- Respecter toutes les clés étrangères.
+- Les IDs doivent être cohérents entre les tables.
+- Générer des données réalistes liées au monde de l’art contemporain.
+- Utiliser des noms, villes, descriptions et thèmes variés.
+- Générer :
+  - 15 artistes
+  - 10 galeries
+  - 25 membres de communauté
+  - 12 disciplines
+  - 20 tags
+  - 20 workshops
+  - 15 exhibitions
+  - 40 artworks
+  - 50 reviews
+  - des relations dans qualified
+  - des relations dans master
+  - des réservations dans booking
+  - des relations dans favoriteDisciplines
+
+Contraintes métier :
+- membershipType ∈ ('FREE', 'PREMIUM')
+- level ∈ ('BEGINNER', 'INTERMEDIATE', 'ADVANCED')
+- status ∈ ('FOR_SALE', 'SOLD', 'EXHIBITED')
+- paymentStatus ∈ ('PENDING', 'PAID', 'CANCELLED')
+
+Règles supplémentaires :
+- Les dates doivent être réalistes.
+- Les prix doivent être variés.
+- Les artistes doivent maîtriser plusieurs disciplines.
+- Les œuvres doivent avoir plusieurs tags.
+- Les reviews doivent contenir des commentaires crédibles.
+- Les workshops doivent être associés à des artistes existants.
+- Les artworks doivent être associés à un artiste et éventuellement à une exhibition.
+- Les membres doivent avoir plusieurs disciplines favorites.
+- Générer des données compatibles MySQL.
+
+Schéma SQL :
+CREATE TABLE Artist (
+    Id_Artist     INT AUTO_INCREMENT PRIMARY KEY,
+    name          VARCHAR(255)  NOT NULL,
+    bio           TEXT          NOT NULL,
+    birthyear     INT           NOT NULL,
+    contactEmail  VARCHAR(255)  NOT NULL,
+    city          VARCHAR(255)  NOT NULL,
+    isActive      BOOLEAN       NOT NULL DEFAULT TRUE
+);
+CREATE TABLE Gallerie (
+    Id_Gallerie   INT AUTO_INCREMENT PRIMARY KEY,
+    name          VARCHAR(255)  NOT NULL,
+    adress        VARCHAR(255)  NOT NULL,
+    rating        DECIMAL(3,1)  NOT NULL,
+    ownerName     VARCHAR(50),
+    openingHours  VARCHAR(50),
+    contactPhone  VARCHAR(50),
+    website       VARCHAR(50)
+);
+CREATE TABLE CommunityMember (
+    Id_CommunityMember INT AUTO_INCREMENT PRIMARY KEY,
+    name               VARCHAR(255)  NOT NULL,
+    email              VARCHAR(255)  NOT NULL,
+    birthyear          INT,
+    phone              VARCHAR(50),
+    membershipType     ENUM('FREE', 'PREMIUM'),
+    city               VARCHAR(255)
+);
+CREATE TABLE Tag (
+    Id_Tag  INT AUTO_INCREMENT PRIMARY KEY,
+    name    VARCHAR(255) NOT NULL
+);
+CREATE TABLE Discipline (
+    Id_Discipline INT AUTO_INCREMENT PRIMARY KEY,
+    name          VARCHAR(50) NOT NULL
+);
+CREATE TABLE Workshop (
+    Id_Workshop       INT AUTO_INCREMENT PRIMARY KEY,
+    title             VARCHAR(255)  NOT NULL,
+    date_             DATETIME      NOT NULL,
+    price             DECIMAL(10,2) NOT NULL,
+    Id_Artist         INT           NOT NULL,
+    level             ENUM('BEGINNER', 'INTERMEDIATE', 'ADVANCED'),
+    durationMinutes   INT,
+    maxParticipants   INT,
+    location          VARCHAR(50),
+    description       VARCHAR(255),
+    FOREIGN KEY (Id_Artist) REFERENCES Artist(Id_Artist)
+);
+CREATE TABLE Exhibition (
+    Id_Exhibition INT AUTO_INCREMENT PRIMARY KEY,
+    title         VARCHAR(255) NOT NULL,
+    start_date    DATE         NOT NULL,
+    end_date      DATE         NOT NULL,
+    Id_Gallerie   INT          NOT NULL,
+    theme         VARCHAR(255),
+    description   VARCHAR(255),
+    curatorName   VARCHAR(255),
+    FOREIGN KEY (Id_Gallerie) REFERENCES Gallerie(Id_Gallerie)
+);
+CREATE TABLE Artwork (
+    Id_Artwork    INT AUTO_INCREMENT PRIMARY KEY,
+    title         VARCHAR(255)  NOT NULL,
+    creationYear  INT           NOT NULL,
+    type          VARCHAR(50)   NOT NULL,
+    price         DECIMAL(10,2) NOT NULL,
+    Id_Artist     INT           NOT NULL,
+    status        ENUM('FOR_SALE', 'SOLD', 'EXHIBITED') NOT NULL DEFAULT 'FOR_SALE',
+    medium        VARCHAR(255),
+    dimensions    VARCHAR(255),
+    description   VARCHAR(255),
+    Id_Exhibition INT,
+    FOREIGN KEY (Id_Exhibition) REFERENCES Exhibition(Id_Exhibition),
+    FOREIGN KEY (Id_Artist)     REFERENCES Artist(Id_Artist)
+);
+CREATE TABLE Review (
+    Id_Review          INT AUTO_INCREMENT PRIMARY KEY,
+    Id_CommunityMember INT          NOT NULL,
+    Id_Artwork         INT          NOT NULL,
+    rating             INT          NOT NULL,
+    comment            VARCHAR(255) NOT NULL,
+    reviewDate         DATE         NOT NULL DEFAULT (CURRENT_DATE),
+    FOREIGN KEY (Id_Artwork)         REFERENCES Artwork(Id_Artwork),
+    FOREIGN KEY (Id_CommunityMember) REFERENCES CommunityMember(Id_CommunityMember)
+);
+CREATE TABLE qualified (
+    Id_Artwork INT NOT NULL,
+    Id_Tag     INT NOT NULL,
+    PRIMARY KEY (Id_Artwork, Id_Tag),
+    FOREIGN KEY (Id_Artwork) REFERENCES Artwork(Id_Artwork),
+    FOREIGN KEY (Id_Tag)     REFERENCES Tag(Id_Tag)
+);
+CREATE TABLE master (
+    Id_Artist     INT NOT NULL,
+    Id_Discipline INT NOT NULL,
+    PRIMARY KEY (Id_Artist, Id_Discipline),
+    FOREIGN KEY (Id_Artist)     REFERENCES Artist(Id_Artist),
+    FOREIGN KEY (Id_Discipline) REFERENCES Discipline(Id_Discipline)
+);
+CREATE TABLE booking (
+    Id_Workshop        INT          NOT NULL,
+    Id_CommunityMember INT          NOT NULL,
+    bookingDate        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    paymentStatus      ENUM('PENDING', 'PAID', 'CANCELLED') NOT NULL DEFAULT 'PENDING',
+    PRIMARY KEY (Id_Workshop, Id_CommunityMember),
+    FOREIGN KEY (Id_Workshop)        REFERENCES Workshop(Id_Workshop),
+    FOREIGN KEY (Id_CommunityMember) REFERENCES CommunityMember(Id_CommunityMember)
+);
+CREATE TABLE favoriteDisciplines (
+    Id_CommunityMember INT NOT NULL,
+    Id_Discipline      INT NOT NULL,
+    PRIMARY KEY (Id_CommunityMember, Id_Discipline),
+    FOREIGN KEY (Id_CommunityMember) REFERENCES CommunityMember(Id_CommunityMember),
+    FOREIGN KEY (Id_Discipline)      REFERENCES Discipline(Id_Discipline)
+);
