@@ -133,7 +133,6 @@ public class Artist {
     }
 
     public void setIdArtist(int int1) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setIdArtist'");
+        // OOP-first model: persistence identifiers are kept inside DAO mapping layers only.
     }
 }
