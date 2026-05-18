@@ -19,4 +19,10 @@ public interface GalleryDao {
     void delete(String galleryName);
 
     List<Exhibition> findExhibitionsByGallery(Gallery gallery);
+
+    void saveExhibition(Exhibition exhibition);
+
+    void updateExhibition(Exhibition exhibition);
+
+    void deleteExhibition(String title);
 }

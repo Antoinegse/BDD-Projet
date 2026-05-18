@@ -11,4 +11,11 @@ public interface CommunityService {
     Optional<CommunityMember> getMemberByName(String name);
 
     List<Review> getReviewsByMember(CommunityMember member);
+
+    // CRUD
+    void createMember(CommunityMember member);
+
+    void updateMember(CommunityMember member);
+
+    void deleteMember(String name);
 }

@@ -4,16 +4,46 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 
-<VBox spacing="10.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.project.artconnect.ui.ExhibitionController">
-    <padding>
-        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-    </padding>
+<!--
+    FIX #4 : colonnes enrichies (titre, galerie, début, fin, thème, commissaire, nb œuvres)
+    FIX #6 : ExhibitionController autonome (plus de dépendance à GalleryService pour le CRUD)
+-->
+<VBox spacing="10.0"
+      xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.project.artconnect.ui.ExhibitionController">
+    <padding><Insets bottom="10.0" left="10.0" right="10.0" top="10.0" /></padding>
+
+    <!-- Barre de recherche -->
+    <HBox spacing="10.0" alignment="CENTER_LEFT">
+        <TextField fx:id="searchField"
+                   promptText="Rechercher par titre, thème, galerie ou commissaire…"
+                   HBox.hgrow="ALWAYS" />
+        <Button text="Rechercher"    onAction="#handleSearch" />
+        <Button text="Réinitialiser" onAction="#handleReset"  />
+    </HBox>
+
+    <!-- Boutons CRUD -->
+    <HBox spacing="8.0" alignment="CENTER_LEFT">
+        <Button text="＋ Ajouter"  onAction="#handleAdd"
+                style="-fx-background-color:#4CAF50;-fx-text-fill:white;-fx-font-weight:bold;" />
+        <Button text="✎ Modifier"  onAction="#handleEdit"
+                style="-fx-background-color:#2196F3;-fx-text-fill:white;-fx-font-weight:bold;" />
+        <Button text="✕ Supprimer" onAction="#handleDelete"
+                style="-fx-background-color:#f44336;-fx-text-fill:white;-fx-font-weight:bold;" />
+    </HBox>
+
+    <!-- Tableau 7 colonnes -->
     <TableView fx:id="exhibitionTable" VBox.vgrow="ALWAYS">
         <columns>
-            <TableColumn fx:id="titleColumn" text="Title" prefWidth="200" />
-            <TableColumn fx:id="galleryColumn" text="Gallery" prefWidth="150" />
-            <TableColumn fx:id="dateColumn" text="Start Date" prefWidth="120" />
-            <TableColumn fx:id="themeColumn" text="Theme" prefWidth="180" />
+            <TableColumn fx:id="titleColumn"    text="Titre"       prefWidth="190" />
+            <TableColumn fx:id="galleryColumn"  text="Galerie"     prefWidth="145" />
+            <TableColumn fx:id="startColumn"    text="Début"       prefWidth="100" />
+            <TableColumn fx:id="endColumn"      text="Fin"         prefWidth="100" />
+            <TableColumn fx:id="themeColumn"    text="Thème"       prefWidth="145" />
+            <TableColumn fx:id="curatorColumn"  text="Commissaire" prefWidth="140" />
+            <TableColumn fx:id="artworksColumn" text="Nb œuvres"   prefWidth="80"  />
         </columns>
+        <placeholder><Label text="Aucune exposition trouvée." /></placeholder>
     </TableView>
 </VBox>

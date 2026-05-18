@@ -51,4 +51,19 @@ public class JdbcCommunityService implements CommunityService {
         }
         return communityMemberDao.findReviewsByMember(member);
     }
+
+    @Override
+    public void createMember(CommunityMember member) {
+        communityMemberDao.save(member);
+    }
+
+    @Override
+    public void updateMember(CommunityMember member) {
+        communityMemberDao.update(member);
+    }
+
+    @Override
+    public void deleteMember(String name) {
+        communityMemberDao.delete(name);
+    }
 }

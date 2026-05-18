@@ -51,4 +51,34 @@ public class JdbcGalleryService implements GalleryService {
         }
         return galleryDao.findExhibitionsByGallery(gallery);
     }
+
+    @Override
+    public void createGallery(Gallery gallery) {
+        galleryDao.save(gallery);
+    }
+
+    @Override
+    public void updateGallery(Gallery gallery) {
+        galleryDao.update(gallery);
+    }
+
+    @Override
+    public void deleteGallery(String name) {
+        galleryDao.delete(name);
+    }
+
+    @Override
+    public void createExhibition(Exhibition exhibition) {
+        galleryDao.saveExhibition(exhibition);
+    }
+
+    @Override
+    public void updateExhibition(Exhibition exhibition) {
+        galleryDao.updateExhibition(exhibition);
+    }
+
+    @Override
+    public void deleteExhibition(String title) {
+        galleryDao.deleteExhibition(title);
+    }
 }

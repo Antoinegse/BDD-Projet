@@ -60,4 +60,19 @@ public class JdbcWorkshopService implements WorkshopService {
         }
         return workshopDao.findBookingsByMember(member);
     }
+
+    @Override
+    public void createWorkshop(Workshop workshop) {
+        workshopDao.save(workshop);
+    }
+
+    @Override
+    public void updateWorkshop(Workshop workshop) {
+        workshopDao.update(workshop);
+    }
+
+    @Override
+    public void deleteWorkshop(String title) {
+        workshopDao.delete(title);
+    }
 }

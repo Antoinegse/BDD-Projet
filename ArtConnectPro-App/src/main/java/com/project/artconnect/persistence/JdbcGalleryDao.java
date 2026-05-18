@@ -256,4 +256,73 @@ public class JdbcGalleryDao implements GalleryDao {
     private java.time.LocalDate toLocalDate(Date date) {
         return date == null ? null : date.toLocalDate();
     }
+
+    // ── Exhibition CRUD ────────────────────────────────────────────────────────
+
+    @Override
+    public void saveExhibition(Exhibition exhibition) {
+        Objects.requireNonNull(exhibition, "exhibition must not be null");
+        if (exhibition.getGallery() == null) {
+            throw new IllegalArgumentException("exhibition must have a gallery");
+        }
+
+        String sql = """
+                INSERT INTO Exhibition(title, start_date, end_date, theme, description, curatorName, Id_Gallerie)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """;
+        try (Connection connection = ConnectionManager.getConnection()) {
+            Integer galleryId = findGalleryId(connection, exhibition.getGallery().getName());
+            if (galleryId == null) throw new RuntimeException("Gallery not found: " + exhibition.getGallery().getName());
+
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setString(1, exhibition.getTitle());
+                statement.setDate(2, exhibition.getStartDate() != null ? Date.valueOf(exhibition.getStartDate()) : null);
+                statement.setDate(3, exhibition.getEndDate()   != null ? Date.valueOf(exhibition.getEndDate())   : null);
+                statement.setString(4, exhibition.getTheme());
+                statement.setString(5, exhibition.getDescription());
+                statement.setString(6, exhibition.getCuratorName());
+                statement.setInt(7, galleryId);
+                statement.executeUpdate();
+            }
+        } catch (SQLException exception) {
+            throw new RuntimeException("Failed to save exhibition: " + exhibition.getTitle(), exception);
+        }
+    }
+
+    @Override
+    public void updateExhibition(Exhibition exhibition) {
+        Objects.requireNonNull(exhibition, "exhibition must not be null");
+
+        String sql = """
+                UPDATE Exhibition
+                SET start_date = ?, end_date = ?, theme = ?, description = ?, curatorName = ?
+                WHERE title = ?
+                """;
+        try (Connection connection = ConnectionManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setDate(1, exhibition.getStartDate() != null ? Date.valueOf(exhibition.getStartDate()) : null);
+            statement.setDate(2, exhibition.getEndDate()   != null ? Date.valueOf(exhibition.getEndDate())   : null);
+            statement.setString(3, exhibition.getTheme());
+            statement.setString(4, exhibition.getDescription());
+            statement.setString(5, exhibition.getCuratorName());
+            statement.setString(6, exhibition.getTitle());
+            statement.executeUpdate();
+        } catch (SQLException exception) {
+            throw new RuntimeException("Failed to update exhibition: " + exhibition.getTitle(), exception);
+        }
+    }
+
+    @Override
+    public void deleteExhibition(String title) {
+        if (title == null || title.isBlank()) return;
+
+        String sql = "DELETE FROM Exhibition WHERE title = ?";
+        try (Connection connection = ConnectionManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, title);
+            statement.executeUpdate();
+        } catch (SQLException exception) {
+            throw new RuntimeException("Failed to delete exhibition: " + title, exception);
+        }
+    }
 }

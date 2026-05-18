@@ -11,4 +11,18 @@ public interface GalleryService {
     Optional<Gallery> getGalleryByName(String name);
 
     List<Exhibition> getExhibitionsByGallery(Gallery gallery);
+
+    // CRUD
+    void createGallery(Gallery gallery);
+
+    void updateGallery(Gallery gallery);
+
+    void deleteGallery(String name);
+
+    // Exhibition CRUD
+    void createExhibition(Exhibition exhibition);
+
+    void updateExhibition(Exhibition exhibition);
+
+    void deleteExhibition(String title);
 }

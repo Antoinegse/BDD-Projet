@@ -4,22 +4,33 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 
-<VBox spacing="10.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.project.artconnect.ui.ArtistController">
-    <padding>
-        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-    </padding>
+<VBox spacing="10.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.project.artconnect.ui.ArtistController">
+    <padding><Insets bottom="10.0" left="10.0" right="10.0" top="10.0" /></padding>
+
+    <!-- Barre de recherche -->
     <HBox spacing="10.0" alignment="CENTER_LEFT">
-        <TextField fx:id="searchField" promptText="Search artists..." HBox.hgrow="ALWAYS" />
-        <ComboBox fx:id="disciplineFilter" promptText="Filter by Discipline" />
-        <Button text="Search" onAction="#handleSearch" />
-        <Button text="Reset" onAction="#handleReset" />
+        <TextField fx:id="searchField" promptText="Rechercher un artiste..." HBox.hgrow="ALWAYS" />
+        <ComboBox fx:id="disciplineFilter" promptText="Filtrer par discipline" />
+        <Button text="Rechercher" onAction="#handleSearch" />
+        <Button text="Réinitialiser" onAction="#handleReset" />
     </HBox>
+
+    <!-- Barre CRUD -->
+    <HBox spacing="8.0" alignment="CENTER_LEFT">
+        <Button text="+ Ajouter" onAction="#handleAdd" style="-fx-background-color:#4CAF50;-fx-text-fill:white;-fx-font-weight:bold;" />
+        <Button text="/ Modifier" onAction="#handleEdit" style="-fx-background-color:#2196F3;-fx-text-fill:white;-fx-font-weight:bold;" />
+        <Button text="X Supprimer" onAction="#handleDelete" style="-fx-background-color:#f44336;-fx-text-fill:white;-fx-font-weight:bold;" />
+    </HBox>
+
     <TableView fx:id="artistTable" VBox.vgrow="ALWAYS">
         <columns>
-            <TableColumn fx:id="nameColumn" text="Name" prefWidth="200" />
-            <TableColumn fx:id="cityColumn" text="City" prefWidth="150" />
-            <TableColumn fx:id="emailColumn" text="Email" prefWidth="200" />
-            <TableColumn fx:id="yearColumn" text="Birth Year" prefWidth="100" />
+            <TableColumn fx:id="nameColumn"  text="Nom"           prefWidth="200" />
+            <TableColumn fx:id="cityColumn"  text="Ville"         prefWidth="150" />
+            <TableColumn fx:id="emailColumn" text="Email"         prefWidth="220" />
+            <TableColumn fx:id="yearColumn"  text="Année naiss."  prefWidth="110" />
+            <TableColumn fx:id="disciplineColumn" text="Disciplines" prefWidth="220" />
         </columns>
+        <placeholder><Label text="Aucun artiste trouvé." /></placeholder>
     </TableView>
 </VBox>

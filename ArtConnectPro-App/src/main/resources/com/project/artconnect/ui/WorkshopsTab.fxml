@@ -4,17 +4,32 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 
-<VBox spacing="10.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.project.artconnect.ui.WorkshopController">
-    <padding>
-        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-    </padding>
+<VBox spacing="10.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.project.artconnect.ui.WorkshopController">
+    <padding><Insets bottom="10.0" left="10.0" right="10.0" top="10.0" /></padding>
+
+    <!-- Barre de recherche -->
+    <HBox spacing="10.0" alignment="CENTER_LEFT">
+        <TextField fx:id="searchField" promptText="Rechercher un atelier..." HBox.hgrow="ALWAYS" />
+        <ComboBox fx:id="levelFilter" promptText="Filtrer par niveau" />
+        <Button text="Rechercher" onAction="#handleSearch" />
+        <Button text="Réinitialiser" onAction="#handleReset" />
+    </HBox>
+
+    <HBox spacing="8.0" alignment="CENTER_LEFT">
+        <Button text="+ Ajouter" onAction="#handleAdd" style="-fx-background-color:#4CAF50;-fx-text-fill:white;-fx-font-weight:bold;" />
+        <Button text="/ Modifier" onAction="#handleEdit" style="-fx-background-color:#2196F3;-fx-text-fill:white;-fx-font-weight:bold;" />
+        <Button text="X Supprimer" onAction="#handleDelete" style="-fx-background-color:#f44336;-fx-text-fill:white;-fx-font-weight:bold;" />
+    </HBox>
+
     <TableView fx:id="workshopTable" VBox.vgrow="ALWAYS">
         <columns>
-            <TableColumn fx:id="titleColumn" text="Title" prefWidth="200" />
-            <TableColumn fx:id="instructorColumn" text="Instructor" prefWidth="150" />
-            <TableColumn fx:id="dateColumn" text="Date" prefWidth="150" />
-            <TableColumn fx:id="priceColumn" text="Price" prefWidth="80" />
-            <TableColumn fx:id="levelColumn" text="Level" prefWidth="100" />
+            <TableColumn fx:id="titleColumn"      text="Titre"       prefWidth="200" />
+            <TableColumn fx:id="instructorColumn" text="Instructeur" prefWidth="150" />
+            <TableColumn fx:id="dateColumn"       text="Date"        prefWidth="150" />
+            <TableColumn fx:id="priceColumn"      text="Prix"        prefWidth="80" />
+            <TableColumn fx:id="levelColumn"      text="Niveau"      prefWidth="100" />
         </columns>
+        <placeholder><Label text="Aucun atelier trouvé." /></placeholder>
     </TableView>
 </VBox>

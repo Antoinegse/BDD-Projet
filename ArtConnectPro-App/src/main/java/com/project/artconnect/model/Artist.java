@@ -112,6 +112,14 @@ public class Artist {
         isActive = active;
     }
 
+
+    public String getDisciplinesDisplay() {
+        return disciplines.stream()
+                .map(Discipline::getName)
+                .reduce((a, b) -> a + ", " + b)
+                .orElse("Aucune");
+    }
+
     public List<Artwork> getArtworks() {
         return artworks;
     }
