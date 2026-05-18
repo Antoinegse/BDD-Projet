@@ -1,0 +1,19 @@
+ETAPE 5 - CHECKLIST
+
+[OK] CRUD connecté à MySQL
+[OK] DAO JDBC
+[OK] Services JDBC
+[OK] Triggers
+[OK] Procédures stockées
+[OK] Transactions
+[OK] Vues SQL
+[OK] Index SQL
+[OK] Relations many-to-many
+
+A FAIRE :
+- Ajouter les colonnes relationnelles dans les TableView
+- Uniformiser les icônes JavaFX
+- Ajouter validations des formulaires
+- Ajouter gestion des erreurs utilisateur
+- Ajouter messages de confirmation
+- Ajouter tests CRUD complets

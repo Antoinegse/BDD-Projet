@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="10.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.project.artconnect.ui.ArtworkController">
+    <padding><Insets bottom="10.0" left="10.0" right="10.0" top="10.0" /></padding>
+
+    <!-- Barre de recherche -->
+    <HBox spacing="10.0" alignment="CENTER_LEFT">
+        <TextField fx:id="searchField" promptText="Rechercher une oeuvre..." HBox.hgrow="ALWAYS" />
+        <ComboBox fx:id="statusFilter" promptText="Filtrer par statut" />
+        <Button text="Rechercher" onAction="#handleSearch" />
+        <Button text="Réinitialiser" onAction="#handleReset" />
+    </HBox>
+
+    <HBox spacing="8.0" alignment="CENTER_LEFT">
+        <Button text="+ Ajouter" onAction="#handleAdd" style="-fx-background-color:#4CAF50;-fx-text-fill:white;-fx-font-weight:bold;" />
+        <Button text="/ Modifier" onAction="#handleEdit" style="-fx-background-color:#2196F3;-fx-text-fill:white;-fx-font-weight:bold;" />
+        <Button text="X Supprimer" onAction="#handleDelete" style="-fx-background-color:#f44336;-fx-text-fill:white;-fx-font-weight:bold;" />
+    </HBox>
+
+    <TableView fx:id="artworkTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="titleColumn"  text="Titre"   prefWidth="200" />
+            <TableColumn fx:id="artistColumn" text="Artiste" prefWidth="150" />
+            <TableColumn fx:id="typeColumn"   text="Type"    prefWidth="110" />
+            <TableColumn fx:id="priceColumn"  text="Prix"    prefWidth="100" />
+            <TableColumn fx:id="statusColumn" text="Statut"  prefWidth="130" />
+        </columns>
+        <placeholder><Label text="Aucune oeuvre trouvée." /></placeholder>
+    </TableView>
+</VBox>

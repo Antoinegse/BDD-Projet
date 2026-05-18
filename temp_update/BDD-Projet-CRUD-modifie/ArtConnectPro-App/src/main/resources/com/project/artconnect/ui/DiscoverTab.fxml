@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<!--
+    FIX #3 : DiscoverController charge les données réelles depuis la base.
+-->
+<VBox spacing="12.0"
+      xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.project.artconnect.ui.DiscoverController">
+    <padding>
+        <Insets bottom="12.0" left="12.0" right="12.0" top="12.0" />
+    </padding>
+
+    <Label text="Découverte — Expositions &amp; Ateliers"
+           style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #212121;" />
+
+    <ScrollPane VBox.vgrow="ALWAYS" fitToWidth="true">
+        <FlowPane fx:id="discoverPane" hgap="16" vgap="16" prefWrapLength="1100">
+            <!-- Cartes ajoutées dynamiquement depuis la base de données -->
+        </FlowPane>
+    </ScrollPane>
+</VBox>

@@ -1,8 +1,7 @@
 package com.project.artconnect.ui;
 
 import com.project.artconnect.model.Exhibition;
-import com.project.artconnect.model.Gallery;
-import com.project.artconnect.service.GalleryService;
+import com.project.artconnect.service.ExhibitionService;
 import com.project.artconnect.util.ServiceProvider;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -11,8 +10,6 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ExhibitionController {
     @FXML
@@ -26,7 +23,7 @@ public class ExhibitionController {
     @FXML
     private TableColumn<Exhibition, String> galleryColumn;
 
-    private final GalleryService galleryService = ServiceProvider.getGalleryService();
+    private final ExhibitionService exhibitionService = ServiceProvider.getExhibitionService();
 
     @FXML
     public void initialize() {
@@ -41,10 +38,7 @@ public class ExhibitionController {
     }
 
     private void refreshData() {
-        List<Exhibition> all = new ArrayList<>();
-        for (Gallery g : galleryService.getAllGalleries()) {
-            all.addAll(g.getExhibitions());
-        }
-        exhibitionTable.setItems(FXCollections.observableArrayList(all));
+        exhibitionTable.setItems(FXCollections.observableArrayList(exhibitionService.getAllExhibitions()));
     }
 }
+

@@ -3,11 +3,13 @@ package com.project.artconnect.util;
 import com.project.artconnect.dao.ArtistDao;
 import com.project.artconnect.dao.ArtworkDao;
 import com.project.artconnect.dao.CommunityMemberDao;
+import com.project.artconnect.dao.ExhibitionDao;
 import com.project.artconnect.dao.GalleryDao;
 import com.project.artconnect.dao.WorkshopDao;
 import com.project.artconnect.persistence.JdbcArtistDao;
 import com.project.artconnect.persistence.JdbcArtworkDao;
 import com.project.artconnect.persistence.JdbcCommunityMemberDao;
+import com.project.artconnect.persistence.JdbcExhibitionDao;
 import com.project.artconnect.persistence.JdbcGalleryDao;
 import com.project.artconnect.persistence.JdbcWorkshopDao;
 import com.project.artconnect.service.*;
@@ -20,6 +22,7 @@ import com.project.artconnect.service.impl.*;
 public class ServiceProvider {
     private static final ArtistService artistService;
     private static final ArtworkService artworkService;
+    private static final ExhibitionService exhibitionService;
     private static final GalleryService galleryService;
     private static final WorkshopService workshopService;
     private static final CommunityService communityService;
@@ -27,12 +30,14 @@ public class ServiceProvider {
     static {
         ArtistDao artistDao = new JdbcArtistDao();
         ArtworkDao artworkDao = new JdbcArtworkDao();
+        ExhibitionDao exhibitionDao = new JdbcExhibitionDao();
         GalleryDao galleryDao = new JdbcGalleryDao();
         WorkshopDao workshopDao = new JdbcWorkshopDao();
         CommunityMemberDao communityMemberDao = new JdbcCommunityMemberDao();
 
         artistService = new JdbcArtistService(artistDao);
         artworkService = new JdbcArtworkService(artworkDao);
+        exhibitionService = new JdbcExhibitionService(exhibitionDao);
         galleryService = new JdbcGalleryService(galleryDao);
         workshopService = new JdbcWorkshopService(workshopDao);
         communityService = new JdbcCommunityService(communityMemberDao);
@@ -44,6 +49,10 @@ public class ServiceProvider {
 
     public static ArtworkService getArtworkService() {
         return artworkService;
+    }
+
+    public static ExhibitionService getExhibitionService() {
+        return exhibitionService;
     }
 
     public static GalleryService getGalleryService() {

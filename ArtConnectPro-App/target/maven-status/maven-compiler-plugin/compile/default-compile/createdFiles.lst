@@ -10,6 +10,7 @@ com\project\artconnect\persistence\JdbcCommunityMemberDao$StatementConfigurer.cl
 com\project\artconnect\dao\ArtistDao.class
 com\project\artconnect\dao\ArtworkDao.class
 com\project\artconnect\service\ArtistService.class
+com\project\artconnect\service\impl\JdbcExhibitionService.class
 com\project\artconnect\service\ArtworkService.class
 com\project\artconnect\ui\DiscoverController$1.class
 com\project\artconnect\service\impl\InMemoryArtworkService.class
@@ -40,6 +41,7 @@ com\project\artconnect\service\impl\JdbcArtworkService.class
 com\project\artconnect\model\Artist.class
 com\project\artconnect\service\CommunityService.class
 com\project\artconnect\ui\GalleryController$1.class
+com\project\artconnect\service\ExhibitionService.class
 com\project\artconnect\model\Booking.class
 com\project\artconnect\ui\MainController.class
 com\project\artconnect\ui\CommunityController.class
