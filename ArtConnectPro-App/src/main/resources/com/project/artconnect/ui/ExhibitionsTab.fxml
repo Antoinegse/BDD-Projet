@@ -27,7 +27,7 @@
     <HBox spacing="8.0" alignment="CENTER_LEFT">
         <Button text="＋ Ajouter"  onAction="#handleAdd"
                 style="-fx-background-color:#4CAF50;-fx-text-fill:white;-fx-font-weight:bold;" />
-        <Button text="✎ Modifier"  onAction="#handleEdit"
+        <Button text="/ Modifier"  onAction="#handleEdit"
                 style="-fx-background-color:#2196F3;-fx-text-fill:white;-fx-font-weight:bold;" />
         <Button text="✕ Supprimer" onAction="#handleDelete"
                 style="-fx-background-color:#f44336;-fx-text-fill:white;-fx-font-weight:bold;" />
