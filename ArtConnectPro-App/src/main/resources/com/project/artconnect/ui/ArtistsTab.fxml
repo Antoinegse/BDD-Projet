@@ -6,31 +6,57 @@
 
 <VBox spacing="10.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.project.artconnect.ui.ArtistController">
-    <padding><Insets bottom="10.0" left="10.0" right="10.0" top="10.0" /></padding>
+    <padding><Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/></padding>
 
-    <!-- Barre de recherche -->
     <HBox spacing="10.0" alignment="CENTER_LEFT">
-        <TextField fx:id="searchField" promptText="Rechercher un artiste..." HBox.hgrow="ALWAYS" />
-        <ComboBox fx:id="disciplineFilter" promptText="Filtrer par discipline" />
-        <Button text="Rechercher" onAction="#handleSearch" />
-        <Button text="Réinitialiser" onAction="#handleReset" />
-    </HBox>
-
-    <!-- Barre CRUD -->
-    <HBox spacing="8.0" alignment="CENTER_LEFT">
-        <Button text="+ Ajouter" onAction="#handleAdd" style="-fx-background-color:#4CAF50;-fx-text-fill:white;-fx-font-weight:bold;" />
-        <Button text="/ Modifier" onAction="#handleEdit" style="-fx-background-color:#2196F3;-fx-text-fill:white;-fx-font-weight:bold;" />
-        <Button text="X Supprimer" onAction="#handleDelete" style="-fx-background-color:#f44336;-fx-text-fill:white;-fx-font-weight:bold;" />
+        <TextField fx:id="searchField" promptText="Search artists..." HBox.hgrow="ALWAYS"/>
+        <ComboBox fx:id="disciplineFilter" promptText="Filter by Discipline"/>
+        <Button text="Search" onAction="#handleSearch"/>
+        <Button text="Reset"  onAction="#handleReset"/>
     </HBox>
 
     <TableView fx:id="artistTable" VBox.vgrow="ALWAYS">
         <columns>
-            <TableColumn fx:id="nameColumn"  text="Nom"           prefWidth="200" />
-            <TableColumn fx:id="cityColumn"  text="Ville"         prefWidth="150" />
-            <TableColumn fx:id="emailColumn" text="Email"         prefWidth="220" />
-            <TableColumn fx:id="yearColumn"  text="Année naiss."  prefWidth="110" />
-            <TableColumn fx:id="disciplineColumn" text="Disciplines" prefWidth="220" />
+            <TableColumn fx:id="nameColumn"        text="Name"        prefWidth="160"/>
+            <TableColumn fx:id="cityColumn"        text="City"        prefWidth="110"/>
+            <TableColumn fx:id="emailColumn"       text="Email"       prefWidth="190"/>
+            <TableColumn fx:id="yearColumn"        text="Birth Year"  prefWidth="80"/>
+            <TableColumn fx:id="disciplinesColumn" text="Disciplines" prefWidth="180"/>
+            <TableColumn fx:id="activeColumn"      text="Active"      prefWidth="60"/>
         </columns>
-        <placeholder><Label text="Aucun artiste trouvé." /></placeholder>
     </TableView>
+
+    <TitledPane text="Artist details" animated="false">
+        <GridPane hgap="10" vgap="8">
+            <padding><Insets top="8" bottom="8" left="8" right="8"/></padding>
+
+            <Label text="Name *"     GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <TextField fx:id="fieldName"  GridPane.rowIndex="0" GridPane.columnIndex="1" prefWidth="200"/>
+            <Label text="Email"      GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+            <TextField fx:id="fieldEmail" GridPane.rowIndex="0" GridPane.columnIndex="3" prefWidth="200"/>
+
+            <Label text="City"       GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <TextField fx:id="fieldCity"  GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+            <Label text="Birth Year" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+            <TextField fx:id="fieldYear"  GridPane.rowIndex="1" GridPane.columnIndex="3"/>
+
+            <Label text="Bio"        GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <TextArea fx:id="fieldBio" GridPane.rowIndex="2" GridPane.columnIndex="1"
+                      GridPane.columnSpan="3" prefRowCount="2" wrapText="true"/>
+
+            <Label text="Disciplines" GridPane.rowIndex="3" GridPane.columnIndex="0"
+                   style="-fx-font-weight: bold;"/>
+            <VBox spacing="4" GridPane.rowIndex="3" GridPane.columnIndex="1" GridPane.columnSpan="3">
+                <Label text="Hold Ctrl / Cmd to select multiple" style="-fx-font-size: 10; -fx-text-fill: #888;"/>
+                <ListView fx:id="disciplineList" prefHeight="90"/>
+            </VBox>
+
+            <HBox spacing="10" GridPane.rowIndex="4" GridPane.columnIndex="0" GridPane.columnSpan="4">
+                <Button text="Add"    onAction="#handleAdd"    style="-fx-base: #4caf50; -fx-text-fill: white;"/>
+                <Button text="Save"   onAction="#handleSave"   style="-fx-base: #2196f3; -fx-text-fill: white;"/>
+                <Button text="Delete" onAction="#handleDelete" style="-fx-base: #f44336; -fx-text-fill: white;"/>
+                <Button text="Clear"  onAction="#handleClear"/>
+            </HBox>
+        </GridPane>
+    </TitledPane>
 </VBox>

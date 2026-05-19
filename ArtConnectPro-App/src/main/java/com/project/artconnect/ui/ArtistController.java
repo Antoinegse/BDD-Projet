@@ -4,154 +4,176 @@ import com.project.artconnect.model.Artist;
 import com.project.artconnect.model.Discipline;
 import com.project.artconnect.service.ArtistService;
 import com.project.artconnect.util.ServiceProvider;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.GridPane;
 
-import java.util.Optional;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ArtistController {
+
+    // toolbar
     @FXML private TextField searchField;
     @FXML private ComboBox<Discipline> disciplineFilter;
-    @FXML private TableView<Artist> artistTable;
-    @FXML private TableColumn<Artist, String> nameColumn;
-    @FXML private TableColumn<Artist, String> cityColumn;
-    @FXML private TableColumn<Artist, String> emailColumn;
-    @FXML private TableColumn<Artist, Integer> yearColumn;
-    @FXML private TableColumn<Artist, String> disciplineColumn;
+
+    // table
+    @FXML private TableView<Artist>              artistTable;
+    @FXML private TableColumn<Artist, String>    nameColumn;
+    @FXML private TableColumn<Artist, String>    cityColumn;
+    @FXML private TableColumn<Artist, String>    emailColumn;
+    @FXML private TableColumn<Artist, Integer>   yearColumn;
+    @FXML private TableColumn<Artist, String>    disciplinesColumn;
+    @FXML private TableColumn<Artist, Boolean>   activeColumn;
+
+    // form
+    @FXML private TextField fieldName;
+    @FXML private TextField fieldEmail;
+    @FXML private TextField fieldCity;
+    @FXML private TextField fieldYear;
+    @FXML private TextArea  fieldBio;
+    @FXML private ListView<Discipline> disciplineList;
 
     private final ArtistService artistService = ServiceProvider.getArtistService();
 
     @FXML
     public void initialize() {
+        // table columns
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         cityColumn.setCellValueFactory(new PropertyValueFactory<>("city"));
         emailColumn.setCellValueFactory(new PropertyValueFactory<>("contactEmail"));
         yearColumn.setCellValueFactory(new PropertyValueFactory<>("birthYear"));
-        disciplineColumn.setCellValueFactory(new PropertyValueFactory<>("disciplinesDisplay"));
+        disciplinesColumn.setCellValueFactory(data -> new SimpleStringProperty(
+                data.getValue().getDisciplines().stream()
+                        .map(Discipline::getName).collect(Collectors.joining(", "))));
+        activeColumn.setCellValueFactory(data -> new SimpleBooleanProperty(data.getValue().isActive()));
+        activeColumn.setCellFactory(col -> new TableCell<>() {
+            @Override protected void updateItem(Boolean v, boolean empty) {
+                super.updateItem(v, empty);
+                setText(empty || v == null ? null : (v ? "Yes" : "No"));
+            }
+        });
 
-        disciplineFilter.setItems(FXCollections.observableArrayList(artistService.getAllDisciplines()));
+        // discipline list + filter — loaded from DB
+        List<Discipline> allDisciplines = artistService.getAllDisciplines();
+        disciplineList.setItems(FXCollections.observableArrayList(allDisciplines));
+        disciplineList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        disciplineFilter.setItems(FXCollections.observableArrayList(allDisciplines));
+
+        // row click → fill form
+        artistTable.getSelectionModel().selectedItemProperty().addListener(
+                (obs, old, sel) -> { if (sel != null) fillForm(sel); });
+
         refreshTable();
     }
 
-    @FXML
-    private void handleSearch() {
-        String query = searchField.getText();
-        Discipline d = disciplineFilter.getValue();
-        String dName = (d != null) ? d.getName() : null;
-        artistTable.setItems(FXCollections.observableArrayList(
-                artistService.searchArtists(query, dName, null)));
+    // ── CRUD ─────────────────────────────────────────────────────────────────
+
+    @FXML private void handleAdd() {
+        Artist a = buildFromForm();
+        if (a == null) return;
+        try { artistService.createArtist(a); refreshTable(); handleClear(); info("Artist added: " + a.getName()); }
+        catch (Exception e) { error("Failed to add artist", e); }
     }
 
-    @FXML
-    private void handleReset() {
+    @FXML private void handleSave() {
+        Artist sel = artistTable.getSelectionModel().getSelectedItem();
+        if (sel == null) { warn("Select an artist to update."); return; }
+        Artist a = buildFromForm();
+        if (a == null) return;
+        a.setName(sel.getName());   // name is the PK lookup key
+        try { artistService.updateArtist(a); refreshTable(); handleClear(); info("Artist updated."); }
+        catch (Exception e) { error("Failed to update artist", e); }
+    }
+
+    @FXML private void handleDelete() {
+        Artist sel = artistTable.getSelectionModel().getSelectedItem();
+        if (sel == null) { warn("Select an artist to delete."); return; }
+        Alert c = new Alert(Alert.AlertType.CONFIRMATION,
+                "Delete \"" + sel.getName() + "\"?", ButtonType.YES, ButtonType.NO);
+        c.showAndWait().ifPresent(btn -> {
+            if (btn == ButtonType.YES) {
+                try { artistService.deleteArtist(sel.getName()); refreshTable(); handleClear(); info("Artist deleted."); }
+                catch (Exception e) { error("Failed to delete artist", e); }
+            }
+        });
+    }
+
+    @FXML private void handleSearch() {
+        Discipline d = disciplineFilter.getValue();
+        artistTable.setItems(FXCollections.observableArrayList(
+                artistService.searchArtists(searchField.getText(),
+                        d != null ? d.getName() : null, null)));
+    }
+
+    @FXML private void handleReset() {
         searchField.clear();
         disciplineFilter.setValue(null);
         refreshTable();
     }
 
-    @FXML
-    private void handleAdd() {
-        showArtistDialog(null).ifPresent(artist -> {
-            artistService.createArtist(artist);
-            refreshTable();
-        });
+    @FXML private void handleClear() {
+        fieldName.clear(); fieldEmail.clear(); fieldCity.clear();
+        fieldYear.clear(); fieldBio.clear();
+        disciplineList.getSelectionModel().clearSelection();
+        artistTable.getSelectionModel().clearSelection();
     }
 
-    @FXML
-    private void handleEdit() {
-        Artist selected = artistTable.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert("Sélection requise", "Veuillez sélectionner un artiste à modifier.");
-            return;
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private void fillForm(Artist a) {
+        fieldName.setText(nvl(a.getName()));
+        fieldEmail.setText(nvl(a.getContactEmail()));
+        fieldCity.setText(nvl(a.getCity()));
+        fieldYear.setText(a.getBirthYear() != null ? String.valueOf(a.getBirthYear()) : "");
+        fieldBio.setText(nvl(a.getBio()));
+
+        // select matching disciplines in the list
+        disciplineList.getSelectionModel().clearSelection();
+        List<String> artistDisciplineNames = a.getDisciplines().stream()
+                .map(Discipline::getName).collect(Collectors.toList());
+        for (int i = 0; i < disciplineList.getItems().size(); i++) {
+            if (artistDisciplineNames.contains(disciplineList.getItems().get(i).getName())) {
+                disciplineList.getSelectionModel().select(i);
+            }
         }
-        showArtistDialog(selected).ifPresent(updated -> {
-            artistService.updateArtist(updated);
-            refreshTable();
-        });
     }
 
-    @FXML
-    private void handleDelete() {
-        Artist selected = artistTable.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert("Sélection requise", "Veuillez sélectionner un artiste à supprimer.");
-            return;
-        }
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-                "Supprimer l'artiste « " + selected.getName() + " » ?",
-                ButtonType.YES, ButtonType.NO);
-        confirm.setHeaderText("Confirmer la suppression");
-        confirm.showAndWait().filter(b -> b == ButtonType.YES).ifPresent(b -> {
-            artistService.deleteArtist(selected.getName());
-            refreshTable();
-        });
-    }
+    private Artist buildFromForm() {
+        String name = fieldName.getText().trim();
+        if (name.isEmpty()) { warn("Name is required."); return null; }
 
-    private Optional<Artist> showArtistDialog(Artist existing) {
-        Dialog<Artist> dialog = new Dialog<>();
-        dialog.setTitle(existing == null ? "Nouvel artiste" : "Modifier l'artiste");
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        Artist a = new Artist();
+        a.setName(name);
+        a.setContactEmail(fieldEmail.getText().trim());
+        a.setCity(fieldCity.getText().trim());
+        a.setBio(fieldBio.getText().trim());
+        a.setActive(true);
 
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(20, 150, 10, 10));
-
-        TextField nameField  = new TextField();  nameField.setPromptText("Nom complet");
-        TextField cityField  = new TextField();  cityField.setPromptText("Ville");
-        TextField emailField = new TextField();  emailField.setPromptText("Email");
-        TextField yearField  = new TextField();  yearField.setPromptText("Année de naissance");
-        TextField bioField   = new TextField();  bioField.setPromptText("Biographie");
-        TextField phoneField = new TextField();  phoneField.setPromptText("Téléphone");
-
-        if (existing != null) {
-            if (existing.getName()         != null) nameField.setText(existing.getName());
-            if (existing.getCity()         != null) cityField.setText(existing.getCity());
-            if (existing.getContactEmail() != null) emailField.setText(existing.getContactEmail());
-            if (existing.getBirthYear()    != null) yearField.setText(existing.getBirthYear().toString());
-            if (existing.getBio()          != null) bioField.setText(existing.getBio());
-            if (existing.getPhone()        != null) phoneField.setText(existing.getPhone());
+        String yr = fieldYear.getText().trim();
+        if (!yr.isEmpty()) {
+            try { a.setBirthYear(Integer.parseInt(yr)); }
+            catch (NumberFormatException ex) { warn("Birth year must be a number."); return null; }
         }
 
-        grid.add(new Label("Nom :"),       0, 0); grid.add(nameField,  1, 0);
-        grid.add(new Label("Ville :"),     0, 1); grid.add(cityField,  1, 1);
-        grid.add(new Label("Email :"),     0, 2); grid.add(emailField, 1, 2);
-        grid.add(new Label("Né(e) en :"), 0, 3); grid.add(yearField,  1, 3);
-        grid.add(new Label("Bio :"),       0, 4); grid.add(bioField,   1, 4);
-        grid.add(new Label("Tél :"),       0, 5); grid.add(phoneField, 1, 5);
+        // selected disciplines
+        a.setDisciplines(disciplineList.getSelectionModel().getSelectedItems()
+                .stream().collect(Collectors.toList()));
 
-        dialog.getDialogPane().setContent(grid);
-
-        Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
-        okButton.setDisable(existing == null);
-        nameField.textProperty().addListener((obs, o, n) -> okButton.setDisable(n.trim().isEmpty()));
-
-        dialog.setResultConverter(btn -> {
-            if (btn != ButtonType.OK) return null;
-            Artist a = existing != null ? existing : new Artist();
-            a.setName(nameField.getText().trim());
-            a.setCity(cityField.getText().trim());
-            a.setContactEmail(emailField.getText().trim());
-            a.setBio(bioField.getText().trim());
-            a.setPhone(phoneField.getText().trim());
-            a.setActive(true);
-            try { a.setBirthYear(Integer.parseInt(yearField.getText().trim())); }
-            catch (NumberFormatException ignored) {}
-            return a;
-        });
-
-        return dialog.showAndWait();
+        return a;
     }
 
     private void refreshTable() {
         artistTable.setItems(FXCollections.observableArrayList(artistService.getAllArtists()));
     }
 
-    private void showAlert(String title, String message) {
-        new Alert(Alert.AlertType.WARNING, message, ButtonType.OK) {{ setHeaderText(title); }}.showAndWait();
+    private String nvl(String s) { return s != null ? s : ""; }
+    private void info(String m)  { new Alert(Alert.AlertType.INFORMATION, m, ButtonType.OK).showAndWait(); }
+    private void warn(String m)  { new Alert(Alert.AlertType.WARNING, m, ButtonType.OK).showAndWait(); }
+    private void error(String m, Exception e) {
+        new Alert(Alert.AlertType.ERROR, m + "\n" + e.getMessage(), ButtonType.OK).showAndWait();
     }
 }

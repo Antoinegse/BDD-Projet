@@ -1,153 +1,153 @@
 package com.project.artconnect.ui;
 
 import com.project.artconnect.model.CommunityMember;
+import com.project.artconnect.model.Discipline;
+import com.project.artconnect.service.ArtistService;
 import com.project.artconnect.service.CommunityService;
 import com.project.artconnect.util.ServiceProvider;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.GridPane;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class CommunityController {
-    @FXML private TextField searchField;
-    @FXML private ComboBox<String> membershipFilter;
-    @FXML private TableView<CommunityMember> memberTable;
-    @FXML private TableColumn<CommunityMember, String> nameColumn;
-    @FXML private TableColumn<CommunityMember, String> emailColumn;
-    @FXML private TableColumn<CommunityMember, String> cityColumn;
+
+    // table
+    @FXML private TableView<CommunityMember>              memberTable;
+    @FXML private TableColumn<CommunityMember, String>    nameColumn;
+    @FXML private TableColumn<CommunityMember, String>    emailColumn;
+    @FXML private TableColumn<CommunityMember, String>    cityColumn;
+    @FXML private TableColumn<CommunityMember, String>    membershipColumn;
+    @FXML private TableColumn<CommunityMember, String>    disciplinesColumn;
+
+    // form
+    @FXML private TextField fieldName;
+    @FXML private TextField fieldEmail;
+    @FXML private TextField fieldCity;
+    @FXML private TextField fieldPhone;
+    @FXML private ComboBox<String> fieldMembership;
+    @FXML private TextField fieldYear;
+    @FXML private ListView<Discipline> disciplineList;
 
     private final CommunityService communityService = ServiceProvider.getCommunityService();
+    private final ArtistService    artistService    = ServiceProvider.getArtistService();
 
     @FXML
     public void initialize() {
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         emailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
         cityColumn.setCellValueFactory(new PropertyValueFactory<>("city"));
-        membershipFilter.setItems(FXCollections.observableArrayList("free", "premium"));
+        membershipColumn.setCellValueFactory(data ->
+                new SimpleStringProperty(nvl(data.getValue().getMembershipType())));
+        disciplinesColumn.setCellValueFactory(data -> new SimpleStringProperty(
+                data.getValue().getFavoriteDisciplines().stream()
+                        .map(Discipline::getName).collect(Collectors.joining(", "))));
+
+        fieldMembership.setItems(FXCollections.observableArrayList("FREE", "PREMIUM"));
+        fieldMembership.setValue("FREE");
+
+        // load disciplines from DB (reuse ArtistService which already has getAllDisciplines)
+        List<Discipline> allDisciplines = artistService.getAllDisciplines();
+        disciplineList.setItems(FXCollections.observableArrayList(allDisciplines));
+        disciplineList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
+        memberTable.getSelectionModel().selectedItemProperty().addListener(
+                (obs, old, sel) -> { if (sel != null) fillForm(sel); });
         refreshTable();
     }
 
-    @FXML
-    private void handleSearch() {
-        String query = searchField.getText().toLowerCase().trim();
-        String membership = membershipFilter.getValue();
-        List<CommunityMember> filtered = communityService.getAllMembers().stream()
-                .filter(m -> query.isEmpty() ||
-                        (m.getName()  != null && m.getName().toLowerCase().contains(query)) ||
-                        (m.getEmail() != null && m.getEmail().toLowerCase().contains(query)) ||
-                        (m.getCity()  != null && m.getCity().toLowerCase().contains(query)))
-                .filter(m -> membership == null || membership.isEmpty() ||
-                        (m.getMembershipType() != null && m.getMembershipType().equals(membership)))
-                .collect(Collectors.toList());
-        memberTable.setItems(FXCollections.observableArrayList(filtered));
+    @FXML private void handleAdd() {
+        CommunityMember m = buildFromForm();
+        if (m == null) return;
+        try { communityService.createMember(m); refreshTable(); handleClear(); info("Member added."); }
+        catch (Exception e) { error("Failed to add member", e); }
     }
 
-    @FXML
-    private void handleReset() {
-        searchField.clear();
-        membershipFilter.setValue(null);
-        refreshTable();
+    @FXML private void handleSave() {
+        CommunityMember sel = memberTable.getSelectionModel().getSelectedItem();
+        if (sel == null) { warn("Select a member to update."); return; }
+        CommunityMember m = buildFromForm();
+        if (m == null) return;
+        m.setName(sel.getName());
+        try { communityService.updateMember(m); refreshTable(); handleClear(); info("Member updated."); }
+        catch (Exception e) { error("Failed to update member", e); }
     }
 
-    @FXML
-    private void handleAdd() {
-        showMemberDialog(null).ifPresent(member -> {
-            communityService.createMember(member);
-            refreshTable();
+    @FXML private void handleDelete() {
+        CommunityMember sel = memberTable.getSelectionModel().getSelectedItem();
+        if (sel == null) { warn("Select a member to delete."); return; }
+        Alert c = new Alert(Alert.AlertType.CONFIRMATION,
+                "Delete \"" + sel.getName() + "\"?", ButtonType.YES, ButtonType.NO);
+        c.showAndWait().ifPresent(btn -> {
+            if (btn == ButtonType.YES) {
+                try { communityService.deleteMember(sel.getName()); refreshTable(); handleClear(); info("Member deleted."); }
+                catch (Exception e) { error("Failed to delete member", e); }
+            }
         });
     }
 
-    @FXML
-    private void handleEdit() {
-        CommunityMember selected = memberTable.getSelectionModel().getSelectedItem();
-        if (selected == null) { showAlert("Sélection requise", "Sélectionnez un membre à modifier."); return; }
-        showMemberDialog(selected).ifPresent(updated -> {
-            communityService.updateMember(updated);
-            refreshTable();
-        });
+    @FXML private void handleClear() {
+        fieldName.clear(); fieldEmail.clear(); fieldCity.clear();
+        fieldPhone.clear(); fieldYear.clear();
+        fieldMembership.setValue("FREE");
+        disciplineList.getSelectionModel().clearSelection();
+        memberTable.getSelectionModel().clearSelection();
     }
 
-    @FXML
-    private void handleDelete() {
-        CommunityMember selected = memberTable.getSelectionModel().getSelectedItem();
-        if (selected == null) { showAlert("Sélection requise", "Sélectionnez un membre à supprimer."); return; }
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-                "Supprimer le membre « " + selected.getName() + " » ?", ButtonType.YES, ButtonType.NO);
-        confirm.setHeaderText("Confirmer la suppression");
-        confirm.showAndWait().filter(b -> b == ButtonType.YES).ifPresent(b -> {
-            communityService.deleteMember(selected.getName());
-            refreshTable();
-        });
+    private void fillForm(CommunityMember m) {
+        fieldName.setText(nvl(m.getName()));
+        fieldEmail.setText(nvl(m.getEmail()));
+        fieldCity.setText(nvl(m.getCity()));
+        fieldPhone.setText(nvl(m.getPhone()));
+        fieldMembership.setValue(m.getMembershipType() != null ? m.getMembershipType() : "FREE");
+        fieldYear.setText(m.getBirthYear() != null ? String.valueOf(m.getBirthYear()) : "");
+
+        // pre-select matching favourite disciplines
+        disciplineList.getSelectionModel().clearSelection();
+        List<String> favNames = m.getFavoriteDisciplines().stream()
+                .map(Discipline::getName).collect(Collectors.toList());
+        for (int i = 0; i < disciplineList.getItems().size(); i++) {
+            if (favNames.contains(disciplineList.getItems().get(i).getName())) {
+                disciplineList.getSelectionModel().select(i);
+            }
+        }
     }
 
-    private Optional<CommunityMember> showMemberDialog(CommunityMember existing) {
-        Dialog<CommunityMember> dialog = new Dialog<>();
-        dialog.setTitle(existing == null ? "Nouveau membre" : "Modifier le membre");
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+    private CommunityMember buildFromForm() {
+        String name  = fieldName.getText().trim();
+        String email = fieldEmail.getText().trim();
+        if (name.isEmpty())  { warn("Name is required."); return null; }
+        if (email.isEmpty()) { warn("Email is required."); return null; }
 
-        GridPane grid = new GridPane();
-        grid.setHgap(10); grid.setVgap(10);
-        grid.setPadding(new Insets(20, 150, 10, 10));
+        CommunityMember m = new CommunityMember(name, email);
+        m.setCity(fieldCity.getText().trim());
+        m.setPhone(fieldPhone.getText().trim());
+        m.setMembershipType(fieldMembership.getValue() != null ? fieldMembership.getValue() : "FREE");
 
-        TextField nameField  = new TextField(); nameField.setPromptText("Nom complet");
-        TextField emailField = new TextField(); emailField.setPromptText("Email");
-        TextField cityField  = new TextField(); cityField.setPromptText("Ville");
-        TextField phoneField = new TextField(); phoneField.setPromptText("Téléphone");
-        TextField yearField  = new TextField(); yearField.setPromptText("Année de naissance");
-        ComboBox<String> membershipCombo = new ComboBox<>(
-                FXCollections.observableArrayList("free", "premium"));
-
-        if (existing != null) {
-            if (existing.getName()           != null) nameField.setText(existing.getName());
-            if (existing.getEmail()          != null) emailField.setText(existing.getEmail());
-            if (existing.getCity()           != null) cityField.setText(existing.getCity());
-            if (existing.getPhone()          != null) phoneField.setText(existing.getPhone());
-            if (existing.getBirthYear()      != null) yearField.setText(existing.getBirthYear().toString());
-            if (existing.getMembershipType() != null) membershipCombo.setValue(existing.getMembershipType());
-        } else {
-            membershipCombo.setValue("free");
+        String yr = fieldYear.getText().trim();
+        if (!yr.isEmpty()) {
+            try { m.setBirthYear(Integer.parseInt(yr)); }
+            catch (NumberFormatException ex) { warn("Birth year must be a number."); return null; }
         }
 
-        grid.add(new Label("Nom :"),         0, 0); grid.add(nameField,      1, 0);
-        grid.add(new Label("Email :"),       0, 1); grid.add(emailField,     1, 1);
-        grid.add(new Label("Ville :"),       0, 2); grid.add(cityField,      1, 2);
-        grid.add(new Label("Tél :"),         0, 3); grid.add(phoneField,     1, 3);
-        grid.add(new Label("Né(e) en :"),   0, 4); grid.add(yearField,      1, 4);
-        grid.add(new Label("Abonnement :"), 0, 5); grid.add(membershipCombo,1, 5);
+        m.setFavoriteDisciplines(disciplineList.getSelectionModel().getSelectedItems()
+                .stream().collect(Collectors.toList()));
 
-        dialog.getDialogPane().setContent(grid);
-
-        Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
-        okButton.setDisable(existing == null);
-        nameField.textProperty().addListener((obs, o, n) -> okButton.setDisable(n.trim().isEmpty()));
-
-        dialog.setResultConverter(btn -> {
-            if (btn != ButtonType.OK) return null;
-            CommunityMember m = existing != null ? existing : new CommunityMember();
-            m.setName(nameField.getText().trim());
-            m.setEmail(emailField.getText().trim());
-            m.setCity(cityField.getText().trim());
-            m.setPhone(phoneField.getText().trim());
-            m.setMembershipType(membershipCombo.getValue());
-            try { m.setBirthYear(Integer.parseInt(yearField.getText().trim())); }
-            catch (NumberFormatException ignored) {}
-            return m;
-        });
-
-        return dialog.showAndWait();
+        return m;
     }
 
     private void refreshTable() {
         memberTable.setItems(FXCollections.observableArrayList(communityService.getAllMembers()));
     }
 
-    private void showAlert(String title, String message) {
-        new Alert(Alert.AlertType.WARNING, message, ButtonType.OK) {{ setHeaderText(title); }}.showAndWait();
+    private String nvl(String s) { return s != null ? s : ""; }
+    private void info(String m)  { new Alert(Alert.AlertType.INFORMATION, m, ButtonType.OK).showAndWait(); }
+    private void warn(String m)  { new Alert(Alert.AlertType.WARNING, m, ButtonType.OK).showAndWait(); }
+    private void error(String m, Exception e) {
+        new Alert(Alert.AlertType.ERROR, m + "\n" + e.getMessage(), ButtonType.OK).showAndWait();
     }
 }

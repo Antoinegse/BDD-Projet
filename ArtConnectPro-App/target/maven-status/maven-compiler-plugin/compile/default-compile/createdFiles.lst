@@ -2,7 +2,6 @@ com\project\artconnect\ui\ExhibitionController.class
 com\project\artconnect\persistence\JdbcWorkshopDao$StatementConfigurer.class
 com\project\artconnect\service\WorkshopService.class
 com\project\artconnect\model\Artwork.class
-com\project\artconnect\ui\CommunityController$1.class
 com\project\artconnect\model\CommunityMember.class
 com\project\artconnect\persistence\JdbcArtworkDao.class
 com\project\artconnect\persistence\JdbcGalleryDao.class
